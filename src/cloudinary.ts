@@ -1,11 +1,12 @@
-// Cloudinary configuration defaults
-export const CLOUDINARY_CLOUD_NAME: string = 'resincraft_shop';
-export const CLOUDINARY_UPLOAD_PRESET: string = 'resincraft_unsigned';
+// Cloudinary configuration
+export const CLOUDINARY_CLOUD_NAME: string = 'dhktegodg';
+export const CLOUDINARY_UPLOAD_PRESET: string = 'resin_craft';
 
 /**
  * Uploads an image file to Cloudinary.
- * First tries client-side direct upload; falls back to serverless proxy /api/uploads,
- * and if unconfigured, returns an ObjectURL or Base64 preview for immediate feedback.
+ * First tries client-side direct upload via unsigned preset (fastest, zero server latency);
+ * falls back to the serverless proxy /api/uploads,
+ * and if offline, returns an ObjectURL or Base64 preview for immediate feedback.
  */
 export async function uploadCustomEmblemImage(file: File): Promise<string> {
   const MAX_SIZE_MB = 5;
@@ -19,15 +20,38 @@ export async function uploadCustomEmblemImage(file: File): Promise<string> {
     throw new Error('Please select a valid image file (JPG, PNG, or WEBP).');
   }
 
-  // Convert to Base64 for reliable transport
-  const base64Data = await fileToBase64(file);
-
+  // 1. Direct Unsigned Cloudinary Upload
   try {
-    // Try sending to /api/uploads
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', CLOUDINARY_UPLOAD_PRESET);
+    formData.append('folder', 'resin/store');
+
+    const directRes = await fetch(
+      `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
+      {
+        method: 'POST',
+        body: formData,
+      }
+    );
+
+    if (directRes.ok) {
+      const data = await directRes.json();
+      if (data.secure_url || data.url) {
+        return data.secure_url || data.url;
+      }
+    }
+  } catch (err) {
+    console.warn('Direct Cloudinary upload error, trying backend proxy:', err);
+  }
+
+  // 2. Fallback to /api/uploads Serverless Proxy
+  try {
+    const base64Data = await fileToBase64(file);
     const response = await fetch('/api/uploads', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fileData: base64Data }),
+      body: JSON.stringify({ fileData: base64Data, folder: 'resin/store' }),
     });
 
     if (response.ok) {
@@ -40,7 +64,7 @@ export async function uploadCustomEmblemImage(file: File): Promise<string> {
     console.warn('API upload route unreachable, falling back to direct browser preview:', err);
   }
 
-  // Fallback to local Object URL for immediate preview
+  // 3. Fallback to local Object URL for offline preview
   return URL.createObjectURL(file);
 }
 
