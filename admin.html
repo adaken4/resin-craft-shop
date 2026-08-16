@@ -161,11 +161,11 @@
           </button>
         </div>
 
-        <!-- 4 Key Metric Cards -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- 4 Key Metric Cards with Guaranteed CSS Grid Gap -->
+        <div class="dashboard-grid-4">
           
           <!-- Lifetime Revenue -->
-          <div class="bg-obsidian-700/80 border border-obsidian-500 hover:border-amber-400/40 rounded-3xl p-6 shadow-resin space-y-2 transition-all">
+          <div class="stat-card space-y-2">
             <div class="flex items-center justify-between text-xs text-text-muted font-bold uppercase tracking-wider">
               <span>Total Revenue</span>
               <div class="w-8 h-8 rounded-xl bg-amber-400/10 flex items-center justify-center text-amber-400">
@@ -177,7 +177,7 @@
           </div>
 
           <!-- Weekly Sales -->
-          <div class="bg-obsidian-700/80 border border-obsidian-500 hover:border-emerald-400/40 rounded-3xl p-6 shadow-resin space-y-2 transition-all">
+          <div class="stat-card space-y-2">
             <div class="flex items-center justify-between text-xs text-text-muted font-bold uppercase tracking-wider">
               <span>Past 7 Days</span>
               <div class="w-8 h-8 rounded-xl bg-emerald-400/10 flex items-center justify-center text-emerald-400">
@@ -189,7 +189,7 @@
           </div>
 
           <!-- Total Orders -->
-          <div class="bg-obsidian-700/80 border border-obsidian-500 hover:border-sky-400/40 rounded-3xl p-6 shadow-resin space-y-2 transition-all">
+          <div class="stat-card space-y-2">
             <div class="flex items-center justify-between text-xs text-text-muted font-bold uppercase tracking-wider">
               <span>Total Orders</span>
               <div class="w-8 h-8 rounded-xl bg-sky-400/10 flex items-center justify-center text-sky-400">
@@ -201,7 +201,7 @@
           </div>
 
           <!-- Custom Design Ratio -->
-          <div class="bg-obsidian-700/80 border border-obsidian-500 hover:border-purple-400/40 rounded-3xl p-6 shadow-resin space-y-2 transition-all">
+          <div class="stat-card space-y-2">
             <div class="flex items-center justify-between text-xs text-text-muted font-bold uppercase tracking-wider">
               <span>Order Type Split</span>
               <div class="w-8 h-8 rounded-xl bg-purple-400/10 flex items-center justify-center text-purple-400">
@@ -215,7 +215,7 @@
         </div>
 
         <!-- Breakdown Graphs / Lists -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="dashboard-grid-2">
           
           <!-- Best-Selling Keyholders -->
           <div class="bg-obsidian-700/80 border border-obsidian-500 rounded-3xl p-6 sm:p-7 space-y-4 shadow-resin">
@@ -264,8 +264,8 @@
           </button>
         </div>
 
-        <!-- Catalog Grid with generous 4-col spacing matching Storefront -->
-        <div id="admin-products-grid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <!-- Catalog Grid with guaranteed CSS grid gap -->
+        <div id="admin-products-grid" class="dashboard-grid-4">
           <p class="col-span-full text-center py-12 text-text-muted">Loading catalog items...</p>
         </div>
       </section>
