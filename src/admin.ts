@@ -294,9 +294,9 @@ function switchTab(tabName: string): void {
   // Update desktop tabs
   desktopTabButtons.forEach(btn => {
     if (btn.dataset.tab === tabName) {
-      btn.className = 'tab-btn active px-4 py-2 rounded-xl font-headline font-bold text-xs flex items-center space-x-2 bg-amber-400 text-obsidian-900 shadow-resin transition-all';
+      btn.className = 'tab-btn active px-5 py-2.5 rounded-xl font-headline font-bold text-xs sm:text-sm inline-flex items-center gap-2.5 bg-amber-400 text-obsidian-900 shadow-resin transition-all whitespace-nowrap';
     } else {
-      btn.className = 'tab-btn px-4 py-2 rounded-xl font-headline font-bold text-xs flex items-center space-x-2 text-text-secondary hover:text-white hover:bg-obsidian-700 transition-all';
+      btn.className = 'tab-btn px-5 py-2.5 rounded-xl font-headline font-bold text-xs sm:text-sm inline-flex items-center gap-2.5 text-text-secondary hover:text-white hover:bg-obsidian-700 transition-all whitespace-nowrap';
     }
   });
 
@@ -468,20 +468,20 @@ function renderAdminProducts(): void {
         </div>
 
         <!-- Action Bar -->
-        <div class="pt-3 border-t border-obsidian-700/80 flex items-center justify-between gap-2">
+        <div class="pt-3 border-t border-obsidian-700/80 flex items-center justify-between gap-3">
           <!-- Toggle In-Stock Pill Button -->
-          <button type="button" class="toggle-active-btn text-xs font-semibold px-3 py-1.5 rounded-xl border ${product.isActive ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'border-obsidian-500 bg-obsidian-700 text-text-muted hover:text-white'} transition-all active:scale-95 flex items-center space-x-1" data-id="${product.id}" data-active="${product.isActive}">
-            <span class="w-1.5 h-1.5 rounded-full ${product.isActive ? 'bg-emerald-400' : 'bg-obsidian-400'}"></span>
+          <button type="button" class="toggle-active-btn text-xs font-semibold px-3.5 py-1.5 rounded-xl border ${product.isActive ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20' : 'border-obsidian-500 bg-obsidian-700 text-text-muted hover:text-white'} transition-all active:scale-95 inline-flex items-center gap-1.5 whitespace-nowrap" data-id="${product.id}" data-active="${product.isActive}">
+            <span class="w-2 h-2 rounded-full ${product.isActive ? 'bg-emerald-400' : 'bg-obsidian-400'} flex-shrink-0"></span>
             <span>${product.isActive ? 'Active' : 'Draft'}</span>
           </button>
           
           <!-- Edit & Delete Buttons -->
-          <div class="flex items-center space-x-1">
-            <button type="button" class="edit-product-btn p-2 text-text-secondary hover:text-amber-400 bg-obsidian-700/60 hover:bg-obsidian-700 rounded-xl transition-colors active:scale-95" data-id="${product.id}" title="Edit Keyholder">
-              <span class="material-symbols-outlined text-lg">edit</span>
+          <div class="flex items-center gap-1.5">
+            <button type="button" class="edit-product-btn p-2.5 text-text-secondary hover:text-amber-400 bg-obsidian-700/80 hover:bg-obsidian-700 rounded-xl transition-colors active:scale-95 inline-flex items-center justify-center" data-id="${product.id}" title="Edit Keyholder">
+              <span class="material-symbols-outlined text-lg leading-none">edit</span>
             </button>
-            <button type="button" class="delete-product-btn p-2 text-text-muted hover:text-red-400 bg-obsidian-700/60 hover:bg-obsidian-700 rounded-xl transition-colors active:scale-95" data-id="${product.id}" title="Delete Keyholder">
-              <span class="material-symbols-outlined text-lg">delete</span>
+            <button type="button" class="delete-product-btn p-2.5 text-text-muted hover:text-red-400 bg-obsidian-700/80 hover:bg-obsidian-700 rounded-xl transition-colors active:scale-95 inline-flex items-center justify-center" data-id="${product.id}" title="Delete Keyholder">
+              <span class="material-symbols-outlined text-lg leading-none">delete</span>
             </button>
           </div>
         </div>
@@ -741,9 +741,9 @@ function renderOrders(): void {
 
         <!-- Footer Actions & Status Changer -->
         <div class="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
-          <div class="flex items-center space-x-2">
+          <div class="flex items-center gap-2">
             <span class="text-xs font-semibold text-text-muted">Status:</span>
-            <select class="order-status-select text-xs font-bold rounded-xl px-3 py-1.5 focus:outline-none ${statusBadge}" data-id="${order.id}">
+            <select class="order-status-select text-xs font-bold rounded-xl px-3.5 py-2 focus:outline-none ${statusBadge} shadow-sm" data-id="${order.id}">
               <option value="pending" ${order.status === 'pending' ? 'selected' : ''}>Pending</option>
               <option value="in_progress" ${order.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
               <option value="ready" ${order.status === 'ready' ? 'selected' : ''}>Ready for Pickup</option>
@@ -752,8 +752,8 @@ function renderOrders(): void {
             </select>
           </div>
 
-          <a href="https://wa.me/?text=${encodeURIComponent(`Hi ${order.buyerName}, about your ${order.productName} order from ResinCraft...`)}" target="_blank" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold text-xs py-2 px-4 rounded-xl border border-emerald-500/30 flex items-center justify-center space-x-1.5 transition-all shadow-sm">
-            <span class="material-symbols-outlined text-sm">chat</span>
+          <a href="https://wa.me/?text=${encodeURIComponent(`Hi ${order.buyerName}, about your ${order.productName} order from ResinCraft...`)}" target="_blank" class="bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold text-xs py-2.5 px-4 rounded-xl border border-emerald-500/30 inline-flex items-center justify-center gap-2 transition-all shadow-sm whitespace-nowrap">
+            <span class="material-symbols-outlined text-sm leading-none flex-shrink-0">chat</span>
             <span>WhatsApp Customer</span>
           </a>
         </div>
