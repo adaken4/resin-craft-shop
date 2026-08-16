@@ -1,3 +1,81 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    background-color: #0C0F0F;
+    color: #E2E2E2;
+    font-family: 'Manrope', sans-serif;
+  }
+  
+  body {
+    background-color: #0C0F0F;
+    color: #E2E2E2;
+    min-height: 100vh;
+  }
+}
+
+/* Bulletproof Navigation Breakpoints */
+.desktop-nav-bar {
+  display: flex !important;
+}
+
+.mobile-nav-bar {
+  display: none !important;
+}
+
+@media (max-width: 767px) {
+  .desktop-nav-bar {
+    display: none !important;
+  }
+  .mobile-nav-bar {
+    display: flex !important;
+  }
+}
+
+/* Bulletproof Responsive Grids & Gaps */
+.dashboard-grid-4 {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 1.5rem !important;
+}
+
+@media (min-width: 640px) {
+  .dashboard-grid-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 1.5rem !important;
+  }
+}
+
+@media (min-width: 1024px) {
+  .dashboard-grid-4 {
+    grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+    gap: 1.5rem !important;
+  }
+}
+
+.dashboard-grid-2 {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 1.5rem !important;
+}
+
+@media (min-width: 1024px) {
+  .dashboard-grid-2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 1.5rem !important;
+  }
+}
+
+.stat-card {
+  padding: 1.5rem !important;
+  border-radius: 1.5rem !important;
+  background-color: rgba(26, 28, 28, 0.85) !important;
+  border: 1px solid #282A2B !important;
+  box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.8), 0 0 20px 0 rgba(255, 191, 0, 0.15) !important;
+}
+
+.stat-card:hover {
+  border-color: rgba(255, 191, 0, 0.4) !important;
+}

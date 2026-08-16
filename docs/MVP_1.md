@@ -1,83 +1,81 @@
-# MVP_1 — Adds a C# Backend (Cloud Run)
+# MVP_1 — Full-Stack Vercel Architecture (TypeScript + Neon + Cloudinary + Admin & Analytics)
 
 ## Precondition
-MVP_0 is live and has taken at least a few real orders through WhatsApp.
-Do not start MVP_1 until MVP_0 is validated — it exists to fix specific
-gaps MVP_0 has, not to add complexity for its own sake.
+MVP_0 storefront is live on Vercel (`resin-craft-shop.vercel.app`) and verified.
+Client/artisan feedback requested admin capabilities for product management, price editing, branding updates, and order visibility.
 
-## Problems MVP_1 solves
-1. Uploaded logo images go straight to a public bucket in MVP_0, unresized
-   and unvalidated beyond a client-side size check.
-2. There is no durable, ownable record of orders — only what lives in the
-   shop owner's WhatsApp thread.
-3. The OG preview image is one static hero shot for every link share,
-   regardless of which product someone is pointing people at.
+## Problems MVP_1 Solves
+1. **Dynamic Catalog & Product Management**: Shop owner can add keyholders, patch prices, edit descriptions, and toggle stock without modifying code or redeploying.
+2. **Branding Flexibility**: Shop name, tagline, WhatsApp number, and announcement banners are editable live from the Admin dashboard.
+3. **Durable Order Logging**: Orders are logged in Neon PostgreSQL before handing off to WhatsApp, creating a permanent sellable record.
+4. **Business Analytics**: Provides the shop owner with actionable metrics on weekly sales revenue, best-selling keyholders, popular bus routes/departments, and custom vs ready-made ratios.
+5. **Secure Admin Authentication**: Simple, mobile-friendly passcode/JWT session authentication for the artisan on his phone.
 
-## New component
-ASP.NET Core Minimal API (.NET 10), containerized, deployed to Cloud Run
-(scale-to-zero). Antigravity can scaffold both the Dockerfile and the API
-project together.
+## Tech Stack
+- **Hosting & Compute**: Vercel (Edge CDN for Vite frontend + Serverless Functions for `/api/*`)
+- **Database**: Neon Serverless PostgreSQL (`resin_craft` project, `@neondatabase/serverless`)
+- **Image Storage**: Cloudinary (unsigned/signed presets with EXIF stripping and auto-optimization)
+- **Frontend**: Vite + TypeScript + Tailwind CSS (Multi-page: Storefront & Admin Dashboard)
 
-## Endpoints
+---
 
-### `POST /api/uploads`
-Accepts a multipart image upload. Validates content-type and size
-server-side, strips EXIF metadata, resizes to a max dimension (e.g. 1600px),
-re-uploads to storage, returns the public URL. Replaces the client-side-only
-upload path from MVP_0.
+## API Endpoints
 
-```
-Request:  multipart/form-data, field "file"
-Response: { "url": "https://storage.../uploads/abc123.jpg" }
-```
+### 1. Products Management
+- **`GET /api/products`**  
+  Public catalog list (returns active products for storefront, or all products including drafts if authenticated as admin).
+- **`POST /api/products`** *(Admin Only)*  
+  Create a new keyholder product (`id`, `name`, `price_kes`, `photo_url`, `description`, `tag`, `category`).
+- **`PUT /api/products`** *(Admin Only)*  
+  Update an existing product (pricing patch, description, active status toggle, image update).
+- **`DELETE /api/products`** *(Admin Only)*  
+  Delete or archive a product.
 
-### `POST /api/orders`
-Logs an order server-side in addition to (not instead of) the WhatsApp
-message — this becomes the shop owner's actual sellable record.
+### 2. Branding & Site Settings
+- **`GET /api/settings`**  
+  Fetch public store configuration (`shop_name`, `tagline`, `whatsapp_number`, `hero_badge`, `custom_price_kes`).
+- **`PUT /api/settings`** *(Admin Only)*  
+  Update shop brand name, WhatsApp order number, announcements, and pricing defaults.
 
-```json
-// Request
-{
-  "productId": "classic-car",        // null for custom orders
-  "customImageUrl": null,             // set for custom orders
-  "department": "IS",
-  "busRoute": "Route 4",
-  "pickupSpot": "Main gate",
-  "quantity": 1,
-  "buyerName": "Jane K.",
-  "note": ""
-}
-```
-Store: Firestore document, or — if the shop owner wants something he can
-open himself without any tooling — an append to a Google Sheet via a
-service account. Prefer the Sheet if "the owner needs to read this without
-a developer" is a hard requirement; prefer Firestore if you expect to build
-a dashboard later.
+### 3. Orders & Order Tracking
+- **`POST /api/orders`**  
+  Persists customer order into Neon database (`product_id`, `product_name`, `price_kes`, `quantity`, `custom_image_url`, `department`, `bus_route`, `pickup_spot`, `buyer_name`, `note`, `status`).
+- **`GET /api/orders`** *(Admin Only)*  
+  List recent orders with status filtering (`pending`, `in_progress`, `ready`, `delivered`).
+- **`PATCH /api/orders`** *(Admin Only)*  
+  Update order fulfillment status.
 
-### `GET /api/products` (optional for this phase)
-Moves the product catalog from MVP_0's static JSON into something the
-backend serves, so the shop owner can eventually update prices/photos
-without redeploying the frontend. Not required if the JSON-file workflow
-from MVP_0 is still working fine for him.
+### 4. Business Analytics
+- **`GET /api/analytics`** *(Admin Only)*  
+  Computes live metrics:
+  - Total & weekly sales revenue (KES)
+  - Total & weekly orders count
+  - Top-selling keyholders ranking
+  - Top delivery routes & departments
+  - Custom emblem vs ready-made orders ratio
+  - Order fulfillment funnel
 
-## Explicitly still out of scope
-- Authentication / accounts
-- Payment gateway integration
-- Admin UI (a spreadsheet is the admin UI for now)
+### 5. Admin Authentication
+- **`POST /api/auth/login`**  
+  Validates admin passcode and issues a secure signed JWT session token.
+- **`GET /api/auth/verify`**  
+  Verifies existing JWT token validity.
 
-## Migration notes from MVP_0
-- Frontend upload call switches from direct Cloudinary/Firebase client SDK
-  to `POST /api/uploads`
-- Frontend form submit fires `POST /api/orders` *and then* still opens the
-  `wa.me` link — do not remove the WhatsApp step, it's still the actual
-  handoff to the shop owner
-- Dynamic OG image generation (per-product share cards) is a nice-to-have
-  once the above two endpoints are stable — do not build it first
+---
 
-## Acceptance checklist
-- [ ] Upload proxy rejects oversized/invalid files server-side, not just
-      client-side
-- [ ] Every order placed via the form is retrievable afterward without
-      relying on WhatsApp chat history
-- [ ] MVP_0's WhatsApp handoff still fires on every order
-- [ ] Cloud Run service scales to zero when idle (no cost while unused)
+## Admin Dashboard Capabilities (`admin.html`)
+1. **Overview & Analytics**: Live revenue counters, best-sellers, and delivery route heatmaps.
+2. **Product Catalog**: Visual grid with live inline price editing, stock status toggling, and a **"+ Add Keyholder"** modal with photo upload.
+3. **Orders Log**: Tabular list of customer orders with live status management and one-click WhatsApp chat link to the customer.
+4. **Store Settings**: Real-time branding editor (Shop Name, Hero Tagline, WhatsApp Number, Announcement Badge).
+
+---
+
+## Acceptance Checklist
+- [ ] Storefront dynamically loads products and settings from Neon DB with fallback to static seed data.
+- [ ] Admin can log in at `/admin.html` with the secure password.
+- [ ] Admin can add, edit, and toggle active status on keyholder products.
+- [ ] Admin can change shop branding and WhatsApp phone number.
+- [ ] Every customer order is recorded in Neon DB and continues seamlessly to WhatsApp.
+- [ ] Analytics tab displays sales revenue, top products, and route breakdowns.
+- [ ] Fully responsive and optimized for mobile smartphone use by the shop owner.
