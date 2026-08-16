@@ -3,8 +3,8 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'dhktegodg';
-const CLOUDINARY_UPLOAD_PRESET = process.env.CLOUDINARY_UPLOAD_PRESET || 'resin_craft';
+const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_UPLOAD_PRESET = process.env.CLOUDINARY_UPLOAD_PRESET;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -16,13 +16,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // GET: Returns the public upload config
+    // GET: Returns the public upload config (only if configured in env)
     if (req.method === 'GET') {
-      const isConfigured = 
-        Boolean(CLOUDINARY_CLOUD_NAME) && 
-        CLOUDINARY_CLOUD_NAME !== 'your_cloud_name' &&
-        Boolean(CLOUDINARY_UPLOAD_PRESET) &&
-        CLOUDINARY_UPLOAD_PRESET !== 'your_upload_preset';
+      const isConfigured = Boolean(CLOUDINARY_CLOUD_NAME && CLOUDINARY_UPLOAD_PRESET);
 
       return res.status(200).json({
         configured: isConfigured,
@@ -33,8 +29,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // POST: Server-side upload handler (accepts base64 or imageUrl)
+    // POST: Server-side upload handler
     if (req.method === 'POST') {
+      if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
+        return res.status(500).json({ 
+          error: 'Image upload is not configured: CLOUDINARY_CLOUD_NAME or CLOUDINARY_UPLOAD_PRESET is missing from environment variables.' 
+        });
+      }
+
       const { fileData, folder = 'resin/store' } = req.body || {};
 
       if (!fileData || typeof fileData !== 'string') {
@@ -59,12 +61,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!cloudRes.ok) {
         const errorText = await cloudRes.text();
         console.error('Cloudinary API upload error:', errorText);
-        // Fallback: return fileData back so flow doesn't break
-        return res.status(200).json({
-          success: true,
-          url: fileData,
-          note: 'Returned base64 fallback',
-        });
+        return res.status(502).json({ error: 'Failed to upload image to Cloudinary storage. Check preset and permissions.' });
       }
 
       const cloudData = await cloudRes.json();

@@ -5,7 +5,7 @@ dotenv.config();
 
 const connectionString = process.env.DATABASE_URL || process.env.POSTGRES_URL;
 
-export const sql = neon(connectionString || 'postgresql://placeholder:placeholder@localhost/placeholder');
+export const sql = connectionString ? neon(connectionString) : null;
 
 // Resilient In-Memory store for local offline dev / fallback
 const memoryStore = {
@@ -108,6 +108,10 @@ const memoryStore = {
  * Execute SQL queries with automatic fallback to memory store for smooth local offline dev
  */
 export async function query<T = any>(text: string, params: any[] = []): Promise<T[]> {
+  if (!sql) {
+    return handleMemoryFallback<T>(text, params);
+  }
+
   try {
     const result = await Promise.race([
       (sql as any).query(text, params),
