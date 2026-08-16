@@ -3,8 +3,8 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME || 'resincraft_shop';
-const CLOUDINARY_UPLOAD_PRESET = process.env.CLOUDINARY_UPLOAD_PRESET || 'resincraft_unsigned';
+const CLOUDINARY_CLOUD_NAME = process.env.CLOUDINARY_CLOUD_NAME;
+const CLOUDINARY_UPLOAD_PRESET = process.env.CLOUDINARY_UPLOAD_PRESET;
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -16,13 +16,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // GET: Returns the public upload config
+    // GET: Returns the public upload config (only if configured in env)
     if (req.method === 'GET') {
-      const isConfigured = 
-        Boolean(CLOUDINARY_CLOUD_NAME) && 
-        CLOUDINARY_CLOUD_NAME !== 'your_cloud_name' &&
-        Boolean(CLOUDINARY_UPLOAD_PRESET) &&
-        CLOUDINARY_UPLOAD_PRESET !== 'your_upload_preset';
+      const isConfigured = Boolean(CLOUDINARY_CLOUD_NAME && CLOUDINARY_UPLOAD_PRESET);
 
       return res.status(200).json({
         configured: isConfigured,
@@ -33,22 +29,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // POST: Server-side upload handler (accepts base64 or imageUrl)
+    // POST: Server-side upload handler
     if (req.method === 'POST') {
-      const { fileData, folder = 'resincraft' } = req.body || {};
+      if (!CLOUDINARY_CLOUD_NAME || !CLOUDINARY_UPLOAD_PRESET) {
+        return res.status(500).json({ 
+          error: 'Image upload is not configured: CLOUDINARY_CLOUD_NAME or CLOUDINARY_UPLOAD_PRESET is missing from environment variables.' 
+        });
+      }
+
+      const { fileData, folder = 'resin/store' } = req.body || {};
 
       if (!fileData || typeof fileData !== 'string') {
         return res.status(400).json({ error: 'fileData string (base64 data URI or image URL) is required.' });
-      }
-
-      // Check if Cloudinary is configured
-      if (!CLOUDINARY_CLOUD_NAME || CLOUDINARY_CLOUD_NAME === 'your_cloud_name' || CLOUDINARY_CLOUD_NAME === 'resincraft_shop') {
-        // Return back the dataURI or local representation gracefully
-        return res.status(200).json({
-          success: true,
-          url: fileData,
-          note: 'Cloudinary credentials pending; returned preview URL.',
-        });
       }
 
       // Upload to Cloudinary API
@@ -69,7 +61,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       if (!cloudRes.ok) {
         const errorText = await cloudRes.text();
         console.error('Cloudinary API upload error:', errorText);
-        return res.status(502).json({ error: 'Failed to upload image to Cloudinary storage.' });
+        return res.status(502).json({ error: 'Failed to upload image to Cloudinary storage. Check preset and permissions.' });
       }
 
       const cloudData = await cloudRes.json();

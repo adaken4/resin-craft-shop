@@ -1,11 +1,6 @@
-// Cloudinary configuration defaults
-export const CLOUDINARY_CLOUD_NAME: string = 'resincraft_shop';
-export const CLOUDINARY_UPLOAD_PRESET: string = 'resincraft_unsigned';
-
 /**
- * Uploads an image file to Cloudinary.
- * First tries client-side direct upload; falls back to serverless proxy /api/uploads,
- * and if unconfigured, returns an ObjectURL or Base64 preview for immediate feedback.
+ * Uploads an image file to Cloudinary via the serverless /api/uploads endpoint
+ * which dynamically and securely reads credentials from environment variables.
  */
 export async function uploadCustomEmblemImage(file: File): Promise<string> {
   const MAX_SIZE_MB = 5;
@@ -19,29 +14,24 @@ export async function uploadCustomEmblemImage(file: File): Promise<string> {
     throw new Error('Please select a valid image file (JPG, PNG, or WEBP).');
   }
 
-  // Convert to Base64 for reliable transport
   const base64Data = await fileToBase64(file);
 
-  try {
-    // Try sending to /api/uploads
-    const response = await fetch('/api/uploads', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fileData: base64Data }),
-    });
+  const response = await fetch('/api/uploads', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ fileData: base64Data, folder: 'resin/store' }),
+  });
 
-    if (response.ok) {
-      const data = await response.json();
-      if (data.url) {
-        return data.url;
-      }
-    }
-  } catch (err) {
-    console.warn('API upload route unreachable, falling back to direct browser preview:', err);
+  const data = await response.json();
+  if (!response.ok) {
+    throw new Error(data.error || 'Failed to upload image. Please check storage configuration.');
   }
 
-  // Fallback to local Object URL for immediate preview
-  return URL.createObjectURL(file);
+  if (data.url) {
+    return data.url;
+  }
+
+  throw new Error('Upload succeeded but no image URL was returned.');
 }
 
 /**

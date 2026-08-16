@@ -164,7 +164,7 @@ function setupEventListeners(): void {
         showDashboard();
         await loadInitialData();
       } else {
-        showToast(data.error || 'Invalid passcode. (Default: resin2026)', 'error');
+        showToast(data.error || 'Invalid passcode. Access denied.', 'error');
         passcodePinInputEl.value = '';
         passcodePinInputEl.focus();
       }
@@ -172,15 +172,6 @@ function setupEventListeners(): void {
       showToast('Authentication network error. Check connection.', 'error');
     }
   });
-
-  // Quick Demo Login One-Click
-  const quickDemoBtn = document.getElementById('quick-demo-login-btn');
-  if (quickDemoBtn) {
-    quickDemoBtn.addEventListener('click', () => {
-      passcodePinInputEl.value = 'resin2026';
-      loginFormEl.dispatchEvent(new Event('submit'));
-    });
-  }
 
   // Logout
   logoutBtnEl.addEventListener('click', () => {
