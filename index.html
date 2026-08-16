@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>ResinCraft — Custom Emblem Keyholders</title>
+  <title id="page-title">ResinCraft — Custom Emblem Keyholders</title>
   <meta name="description" content="Your logo, sealed in pristine, hand-poured resin. Custom emblem keyholders delivered directly to your Nairobi bus route or office pickup spot." />
 
   <!-- Open Graph / WhatsApp Preview -->
@@ -27,19 +27,25 @@
   <header class="sticky top-0 z-40 bg-obsidian-800/90 backdrop-blur-md border-b border-obsidian-500/50 px-4 lg:px-8 py-3.5">
     <div class="max-w-6xl mx-auto flex items-center justify-between">
       <a href="#" class="flex items-center space-x-3 group">
-        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-400 flex items-center justify-center text-obsidian-900 font-extrabold text-xl shadow-amber-glow group-hover:scale-105 transition-transform">
+        <div id="brand-logo-icon" class="w-9 h-9 rounded-xl bg-gradient-to-tr from-amber-500 to-amber-400 flex items-center justify-center text-obsidian-900 font-extrabold text-xl shadow-amber-glow group-hover:scale-105 transition-transform">
           R
         </div>
         <div>
-          <span class="font-headline font-extrabold text-xl tracking-tight text-white group-hover:text-amber-400 transition-colors">ResinCraft</span>
+          <span id="brand-header-name" class="font-headline font-extrabold text-xl tracking-tight text-white group-hover:text-amber-400 transition-colors">ResinCraft</span>
           <span class="hidden sm:inline-block text-xs text-amber-400 font-label font-bold uppercase tracking-wider ml-2 bg-amber-400/10 px-2 py-0.5 rounded">Handmade</span>
         </div>
       </a>
 
-      <a href="#order-section" class="bg-amber-400 hover:bg-amber-500 text-obsidian-900 font-headline font-bold text-sm px-4 py-2 rounded-xl transition-all shadow-amber-glow flex items-center space-x-1">
-        <span class="material-symbols-outlined text-lg">shopping_bag</span>
-        <span>Order Custom</span>
-      </a>
+      <div class="flex items-center space-x-3">
+        <a href="admin.html" class="hidden sm:flex items-center space-x-1 text-xs text-text-muted hover:text-amber-400 transition-colors px-2 py-1 rounded-lg border border-obsidian-600 hover:border-amber-400/40" title="Admin Product & Orders Portal">
+          <span class="material-symbols-outlined text-sm">lock</span>
+          <span>Admin</span>
+        </a>
+        <a href="#order-section" class="bg-amber-400 hover:bg-amber-500 text-obsidian-900 font-headline font-bold text-sm px-4 py-2 rounded-xl transition-all shadow-amber-glow flex items-center space-x-1">
+          <span class="material-symbols-outlined text-lg">shopping_bag</span>
+          <span>Order Custom</span>
+        </a>
+      </div>
     </div>
   </header>
 
@@ -49,14 +55,14 @@
     <div class="max-w-4xl mx-auto text-center relative z-10">
       <div class="inline-flex items-center space-x-2 bg-obsidian-600 border border-amber-400/30 rounded-full px-4 py-1.5 mb-6 text-xs text-amber-400 font-headline font-bold uppercase tracking-wider shadow-sm">
         <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-        <span>Nairobi Office & Route Express Delivery</span>
+        <span id="hero-badge-text">Nairobi Office & Route Express Delivery</span>
       </div>
 
       <h1 class="text-3xl sm:text-5xl lg:text-6xl font-headline font-extrabold text-white tracking-tight leading-tight mb-6">
         Your emblem, sealed in <span class="text-transparent bg-clip-text bg-gradient-to-r from-amber-400 via-amber-400 to-amber-500">pristine, hand-poured resin.</span>
       </h1>
 
-      <p class="text-base sm:text-xl text-text-secondary max-w-2xl mx-auto leading-relaxed mb-8">
+      <p id="hero-tagline-text" class="text-base sm:text-xl text-text-secondary max-w-2xl mx-auto leading-relaxed mb-8">
         Handcrafted keyholders with ultra-glossy dome protection. Choose from our featured ready-made designs or upload your own department emblem, initial, or logo.
       </p>
 
@@ -83,7 +89,7 @@
           <h2 class="text-2xl sm:text-3xl font-headline font-bold text-white">Featured Ready-Made Designs</h2>
           <p class="text-sm text-text-secondary mt-1">Pre-cast keyholders ready for immediate Nairobi pickup delivery.</p>
         </div>
-        <span class="text-xs font-label font-bold text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20 self-start sm:self-auto">KES 450 - 550</span>
+        <span id="price-range-badge" class="text-xs font-label font-bold text-amber-400 bg-amber-400/10 px-3 py-1 rounded-full border border-amber-400/20 self-start sm:self-auto">KES 450 - 550</span>
       </div>
 
       <!-- Dynamic Product Grid -->
@@ -113,7 +119,7 @@
             </li>
             <li class="flex items-center space-x-2">
               <span class="material-symbols-outlined text-amber-400 text-lg">check_circle</span>
-              <span>Flat rate KES 500 per custom keyholder</span>
+              <span id="custom-price-highlight">Flat rate KES 500 per custom keyholder</span>
             </li>
           </ul>
         </div>
@@ -258,9 +264,15 @@
   <footer class="bg-obsidian-900 border-t border-obsidian-600/40 py-8 px-4 text-center text-xs text-text-muted space-y-2">
     <div class="flex items-center justify-center space-x-2 text-text-secondary font-headline font-bold">
       <span class="w-2 h-2 rounded-full bg-amber-400"></span>
-      <span>ResinCraft Studio — Hand-Poured Emblem Keyholders</span>
+      <span id="brand-footer-name">ResinCraft Studio — Hand-Poured Emblem Keyholders</span>
     </div>
     <p>Orders are fulfilled directly via WhatsApp. No payment processing stored on web server.</p>
+    <div class="pt-2">
+      <a href="admin.html" class="inline-flex items-center space-x-1 text-obsidian-400 hover:text-amber-400 transition-colors">
+        <span class="material-symbols-outlined text-xs">admin_panel_settings</span>
+        <span>Admin Portal</span>
+      </a>
+    </div>
   </footer>
 
 </body>
