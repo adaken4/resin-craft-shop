@@ -1,3 +1,35 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    background-color: #0C0F0F;
+    color: #E2E2E2;
+    font-family: 'Manrope', sans-serif;
+  }
+  
+  body {
+    background-color: #0C0F0F;
+    color: #E2E2E2;
+    min-height: 100vh;
+  }
+}
+
+/* Bulletproof Navigation Breakpoints */
+.desktop-nav-bar {
+  display: flex !important;
+}
+
+.mobile-nav-bar {
+  display: none !important;
+}
+
+@media (max-width: 767px) {
+  .desktop-nav-bar {
+    display: none !important;
+  }
+  .mobile-nav-bar {
+    display: flex !important;
+  }
+}

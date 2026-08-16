@@ -173,6 +173,15 @@ function setupEventListeners(): void {
     }
   });
 
+  // Quick Demo Login One-Click
+  const quickDemoBtn = document.getElementById('quick-demo-login-btn');
+  if (quickDemoBtn) {
+    quickDemoBtn.addEventListener('click', () => {
+      passcodePinInputEl.value = 'resin2026';
+      loginFormEl.dispatchEvent(new Event('submit'));
+    });
+  }
+
   // Logout
   logoutBtnEl.addEventListener('click', () => {
     localStorage.removeItem('resincraft_admin_token');
@@ -317,12 +326,10 @@ function switchTab(tabName: string): void {
 }
 
 async function loadInitialData(): Promise<void> {
-  await Promise.all([
-    loadAnalytics(),
-    loadProducts(),
-    loadOrders(),
-    loadSettings(),
-  ]);
+  try { await loadAnalytics(); } catch (e) { console.warn('Analytics init error:', e); }
+  try { await loadProducts(); } catch (e) { console.warn('Products init error:', e); }
+  try { await loadOrders(); } catch (e) { console.warn('Orders init error:', e); }
+  try { await loadSettings(); } catch (e) { console.warn('Settings init error:', e); }
 }
 
 // ------------------------------------------------------------------
@@ -336,50 +343,67 @@ async function loadAnalytics(): Promise<void> {
 
     if (!res.ok) return;
     const data = await res.json();
-    const stats: AnalyticsData = data.analytics;
+    const stats: Partial<AnalyticsData> = data?.analytics || {};
 
-    statTotalRevenueEl.textContent = `KES ${stats.totalRevenueKES.toLocaleString()}`;
-    statWeeklyRevenueEl.textContent = `KES ${stats.weeklyRevenueKES.toLocaleString()}`;
-    statWeeklyOrdersEl.textContent = `${stats.weeklyOrders} orders this week`;
-    statTotalOrdersEl.textContent = `${stats.totalOrders}`;
-    statItemsSoldEl.textContent = `${stats.totalItemsSold} keyholders crafted`;
+    const totalRev = Number(stats?.totalRevenueKES) || 0;
+    const weeklyRev = Number(stats?.weeklyRevenueKES) || 0;
+    const weeklyOrders = Number(stats?.weeklyOrders) || 0;
+    const totalOrders = Number(stats?.totalOrders) || 0;
+    const totalItems = Number(stats?.totalItemsSold) || 0;
 
-    const totalCustOrders = stats.customRatio.reduce((acc, c) => acc + c.count, 0);
-    const customCount = stats.customRatio.find(c => c.orderType === 'Custom Emblem')?.count || 0;
+    if (statTotalRevenueEl) statTotalRevenueEl.textContent = `KES ${totalRev.toLocaleString()}`;
+    if (statWeeklyRevenueEl) statWeeklyRevenueEl.textContent = `KES ${weeklyRev.toLocaleString()}`;
+    if (statWeeklyOrdersEl) statWeeklyOrdersEl.textContent = `${weeklyOrders} orders this week`;
+    if (statTotalOrdersEl) statTotalOrdersEl.textContent = `${totalOrders}`;
+    if (statItemsSoldEl) statItemsSoldEl.textContent = `${totalItems} keyholders crafted`;
+
+    const customRatioList = Array.isArray(stats?.customRatio) ? stats.customRatio : [];
+    const totalCustOrders = customRatioList.reduce((acc, c) => acc + (Number(c?.count) || 0), 0);
+    const customCount = customRatioList.find(c => c?.orderType === 'Custom Emblem')?.count || 0;
     const customPct = totalCustOrders > 0 ? Math.round((customCount / totalCustOrders) * 100) : 50;
-    statCustomRatioEl.textContent = `${customPct}% Custom`;
+    if (statCustomRatioEl) statCustomRatioEl.textContent = `${customPct}% Custom`;
 
     // Render Best Selling Products
-    if (!stats.topProducts || stats.topProducts.length === 0) {
-      analyticsTopProductsEl.innerHTML = `<p class="text-xs text-text-muted py-4 text-center">Initial catalog ready for customer orders.</p>`;
-    } else {
-      const maxSales = Math.max(...stats.topProducts.map(p => p.totalSalesKES), 1);
-      analyticsTopProductsEl.innerHTML = stats.topProducts.map(prod => `
-        <div class="space-y-1.5 p-3 rounded-2xl bg-obsidian-900/60 border border-obsidian-700/50">
-          <div class="flex items-center justify-between text-xs font-semibold">
-            <span class="text-white">${prod.productName}</span>
-            <span class="text-amber-400 font-headline font-bold">KES ${prod.totalSalesKES.toLocaleString()} <span class="text-[11px] text-text-muted font-normal">(${prod.totalQuantity} sold)</span></span>
-          </div>
-          <div class="w-full h-2 bg-obsidian-800 rounded-full overflow-hidden">
-            <div class="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full" style="width: ${(prod.totalSalesKES / maxSales) * 100}%"></div>
-          </div>
-        </div>
-      `).join('');
+    const topProductsList = Array.isArray(stats?.topProducts) ? stats.topProducts : [];
+    if (analyticsTopProductsEl) {
+      if (topProductsList.length === 0) {
+        analyticsTopProductsEl.innerHTML = `<p class="text-xs text-text-muted py-4 text-center">Initial catalog ready for customer orders.</p>`;
+      } else {
+        const maxSales = Math.max(...topProductsList.map(p => Number(p?.totalSalesKES) || 0), 1);
+        analyticsTopProductsEl.innerHTML = topProductsList.map(prod => {
+          const salesKES = Number(prod?.totalSalesKES) || 0;
+          const qty = Number(prod?.totalQuantity) || 0;
+          return `
+            <div class="space-y-1.5 p-3 rounded-2xl bg-obsidian-900/60 border border-obsidian-700/50">
+              <div class="flex items-center justify-between text-xs font-semibold">
+                <span class="text-white">${prod.productName}</span>
+                <span class="text-amber-400 font-headline font-bold">KES ${salesKES.toLocaleString()} <span class="text-[11px] text-text-muted font-normal">(${qty} sold)</span></span>
+              </div>
+              <div class="w-full h-2 bg-obsidian-800 rounded-full overflow-hidden">
+                <div class="h-full bg-gradient-to-r from-amber-500 to-amber-400 rounded-full" style="width: ${(salesKES / maxSales) * 100}%"></div>
+              </div>
+            </div>
+          `;
+        }).join('');
+      }
     }
 
     // Render Top Routes
-    if (!stats.topRoutes || stats.topRoutes.length === 0) {
-      analyticsTopRoutesEl.innerHTML = `<p class="text-xs text-text-muted py-4 text-center">No route delivery records yet.</p>`;
-    } else {
-      analyticsTopRoutesEl.innerHTML = stats.topRoutes.map(route => `
-        <div class="flex items-center justify-between p-3 rounded-2xl bg-obsidian-900/60 border border-obsidian-700/50 text-xs">
-          <div class="flex items-center space-x-2">
-            <span class="material-symbols-outlined text-amber-400 text-base">location_on</span>
-            <span class="text-text-primary font-medium">${route.busRoute}</span>
+    const topRoutesList = Array.isArray(stats?.topRoutes) ? stats.topRoutes : [];
+    if (analyticsTopRoutesEl) {
+      if (topRoutesList.length === 0) {
+        analyticsTopRoutesEl.innerHTML = `<p class="text-xs text-text-muted py-4 text-center">No route delivery records yet.</p>`;
+      } else {
+        analyticsTopRoutesEl.innerHTML = topRoutesList.map(route => `
+          <div class="flex items-center justify-between p-3 rounded-2xl bg-obsidian-900/60 border border-obsidian-700/50 text-xs">
+            <div class="flex items-center space-x-2">
+              <span class="material-symbols-outlined text-amber-400 text-base">location_on</span>
+              <span class="text-text-primary font-medium">${route.busRoute}</span>
+            </div>
+            <span class="text-amber-400 font-bold bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">${route.orderCount} orders</span>
           </div>
-          <span class="text-amber-400 font-bold bg-amber-400/10 px-2 py-0.5 rounded-full border border-amber-400/20">${route.orderCount} orders</span>
-        </div>
-      `).join('');
+        `).join('');
+      }
     }
   } catch (err) {
     console.error('Analytics load error:', err);
