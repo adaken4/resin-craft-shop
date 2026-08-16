@@ -1,117 +1,94 @@
-# Architecture — ResinCraft Emblem Keyholders
+# Architecture — ResinCraft Keyholder Showcase & Shop
 
 ## Overview
-A single-page storefront where checkout is a pre-filled WhatsApp message,
-not a payment transaction. The system has two deployable states — see
-`MVP_0.md` (no backend) and `MVP_1.md` (adds a C# API) — and this doc
-describes the shape once both exist. Do not build MVP_1's pieces before
-MVP_0 is working end-to-end.
+A full-stack single-repo e-commerce showcase hosted on **Vercel** where checkout triggers both a server-side order record and a pre-filled WhatsApp message. The system includes an interactive customer storefront and an authenticated **Admin Dashboard** for product management, real-time pricing patches, dynamic branding updates, order logs, and business analytics.
 
-## System diagram (MVP_1 state)
+## System diagram (MVP_1 Vercel Full-Stack Architecture)
 
 ```
-                     ┌─────────────────────────┐
-   Colleague's       │  Static Frontend         │
-   phone browser ───▶│  (Stitch export, hosted  │
-   (from a WhatsApp   │   on Firebase Hosting /  │
-    or Teams link)    │   Netlify)                │
-                     └───────────┬──────────────┘
-                                 │
-                 ┌───────────────┼───────────────┐
-                 ▼                               ▼
-      POST /api/uploads                 POST /api/orders
-                 │                               │
-                 ▼                               ▼
-      ┌─────────────────────────────────────────────┐
-      │  ASP.NET Core Minimal API (.NET 10)          │
-      │  containerized, deployed on Cloud Run         │
-      │  (scale-to-zero)                              │
-      └───────┬───────────────────────────┬───────────┘
-              │                           │
-              ▼                           ▼
-      Image storage                Order log
-      (Cloudinary /                (Firestore or
-       Firebase Storage)            Google Sheet)
-
-                                 │
-                                 ▼
-                    Browser opens wa.me deep link
-                    → shop owner's WhatsApp
+                     ┌──────────────────────────────────────────────┐
+   Customer          │  Vercel Edge Network (CDN)                   │
+   Smartphone / PC ──┼──▶ Storefront (`index.html`, `src/main.ts`)  │
+                     │  Admin Portal (`admin.html`, `src/admin.ts`) │
+                     └───────────────────────┬──────────────────────┘
+                                             │
+                                             ▼
+                     ┌──────────────────────────────────────────────┐
+                     │  Vercel Serverless Functions (`/api/*`)       │
+                     │  • /api/products  (CRUD, price patch)        │
+                     │  • /api/settings  (Dynamic branding)         │
+                     │  • /api/orders    (Order logging)            │
+                     │  • /api/analytics (Sales & route metrics)    │
+                     │  • /api/auth      (JWT session auth)         │
+                     │  • /api/uploads   (Image processing)         │
+                     └───────────────┬──────────────────────────────┘
+                                     │
+                    ┌────────────────┴────────────────┐
+                    ▼                                 ▼
+         Neon Serverless PostgreSQL           Cloudinary Media Storage
+         (Database: `resin_craft`)            (Keyholder photos & custom
+         • products table                      emblem customer uploads)
+         • orders table
+         • site_settings table
+                    │
+                    ▼
+         Browser opens wa.me deep link
+         → Shop owner's WhatsApp
 ```
 
-In the MVP_0 state, the two API boxes and the Cloud Run layer don't exist
-yet — the browser talks to image storage directly and the `wa.me` link is
-the only "backend."
-
-## Tech stack
+## Tech Stack
 | Layer | Choice | Why |
 |---|---|---|
-| Design | Google Stitch | Generates the Tailwind/HTML UI, exports to Antigravity |
-| Frontend build | Whatever Antigravity scaffolds from the Stitch export (plain HTML/Tailwind is enough — no framework required for a single page) | Keeps MVP_0 dependency-free |
-| Backend (MVP_1 only) | ASP.NET Core Minimal API, .NET 10 | Matches existing C#/.NET skill; Antigravity has strong .NET 10 support |
-| Backend hosting | Google Cloud Run | Scale-to-zero billing; same ecosystem as Stitch/Antigravity; containerized so the language choice doesn't matter to the platform |
-| Frontend hosting | Firebase Hosting or Netlify (static) | No compute needed for a static page |
-| Image storage | Cloudinary (unsigned upload for MVP_0) or Firebase Storage | Public URL on upload, generous free tier |
-| Order log (MVP_1) | Firestore, or Google Sheets via service account | Sheet if the shop owner needs to read it directly without tooling |
+| Frontend Storefront & Admin | Vite, TypeScript, Tailwind CSS | High performance, zero bloat, instant mobile load times |
+| Serverless API | Vercel Serverless Functions (Node/TypeScript) | Single-repo, zero-config deployment on `git push`, auto-scaling |
+| Database | Neon Serverless PostgreSQL (`resin_craft`) | Branching, scale-to-zero serverless PostgreSQL with sub-10ms queries |
+| Media Storage | Cloudinary | Auto-format, responsive delivery, on-the-fly resizing & EXIF strip |
+| Auth & Security | Signed JWT (`jose`) + Admin Passcode | Mobile-friendly session tokens, input sanitization, debounced queries |
 
-## Data model
+## Data Model (PostgreSQL)
+```sql
+-- Products Table
+CREATE TABLE products (
+  id VARCHAR(64) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL,
+  price_kes NUMERIC(10, 2) NOT NULL DEFAULT 450,
+  photo_url TEXT NOT NULL,
+  description TEXT NOT NULL DEFAULT '',
+  tag VARCHAR(50) DEFAULT NULL,
+  category VARCHAR(50) NOT NULL DEFAULT 'keyholder',
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Orders Table
+CREATE TABLE orders (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  product_id VARCHAR(64) REFERENCES products(id) ON DELETE SET NULL,
+  product_name VARCHAR(255) NOT NULL,
+  price_kes NUMERIC(10, 2) NOT NULL,
+  quantity INTEGER NOT NULL DEFAULT 1,
+  custom_image_url TEXT DEFAULT NULL,
+  department VARCHAR(100) NOT NULL,
+  bus_route VARCHAR(100) NOT NULL,
+  pickup_spot VARCHAR(100) NOT NULL,
+  buyer_name VARCHAR(150) NOT NULL,
+  note TEXT DEFAULT NULL,
+  status VARCHAR(50) NOT NULL DEFAULT 'pending',
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+-- Site Settings & Branding
+CREATE TABLE site_settings (
+  key VARCHAR(64) PRIMARY KEY,
+  value TEXT NOT NULL,
+  description TEXT,
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
 ```
-Product {
-  id: string
-  name: string
-  priceKES: number
-  photoUrl: string
-  kind: "ready-made"
-}
 
-Order {
-  productId: string | null      // null when it's a custom order
-  customImageUrl: string | null // set only for custom orders
-  department: string
-  busRoute: string
-  pickupSpot: string
-  quantity: number
-  buyerName: string
-  note: string | null
-  createdAt: timestamp           // MVP_1 only
-}
-```
-Two shapes, no relations, no auth-scoped ownership. Resist adding fields
-that aren't needed to fulfill an order.
-
-## WhatsApp message template
-```
-New order:
-{productName or "Custom emblem"}
-Qty: {quantity}
-Dept: {department}
-Bus route: {busRoute} | Pickup: {pickupSpot}
-Name: {buyerName}
-Design: {customImageUrl}     ← only present for custom orders
-```
-Keep the encoded message under ~1500 characters — some WhatsApp clients
-truncate longer pre-filled text.
-
-## Open Graph
-- MVP_0: one static `og:title` / `og:description` / `og:image` for the
-  whole page (see MVP_0.md)
-- MVP_1 (optional, low priority): per-product OG image generated server-side
-  when someone shares a direct product link
-
-## Security / trust notes
-- Validate uploaded file type and size **server-side** in MVP_1, not just
-  in the browser — MVP_0's client-only check is a stopgap, not a control
-- Strip EXIF metadata from uploaded images before storing (phone photos
-  often carry location metadata)
-- Don't collect more than the order fields above — no need for phone
-  numbers, emails, or IDs beyond what WhatsApp already carries implicitly
-- Uploaded "logos" may occasionally be a company or department logo — this
-  is a personal side project, not an official CIFOR-ICRAF service, so avoid
-  anything that implies institutional endorsement (e.g. no CIFOR-ICRAF
-  branding on the storefront itself)
-
-## Distribution note (not a code concern, but worth keeping in this doc)
-The link is meant to go into Nairobi bus-route WhatsApp groups and MS Teams
-channels across departments — get explicit permission through those same
-channels before a wide send, and consider a single bus-route pilot before
-a department-wide Teams post.
+## Security & Reliability Notes
+- **Defensive Input Handling**: Server-side payload validation for all numeric fields (preventing negative or zero quantities/prices) and sanitization of text inputs.
+- **Client Debouncing**: Search queries, price edits, and form inputs are debounced to prevent unnecessary network spam.
+- **Graceful Offline/Network Degradation**: Storefront loads embedded seed fallback if database connection times out.
