@@ -8,7 +8,7 @@ const JWT_SECRET = new TextEncoder().encode(
   process.env.JWT_SECRET || 'resincraft_default_secret_key_at_least_32_chars_2026'
 );
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'resin2026';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
 
 /**
  * Creates a signed JWT for the authenticated admin
@@ -54,6 +54,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   if (req.method === 'POST') {
+    if (!ADMIN_PASSWORD) {
+      return res.status(500).json({ error: 'ADMIN_PASSWORD environment variable is not configured on the server.' });
+    }
+
     const { password } = req.body || {};
     if (!password || typeof password !== 'string') {
       return res.status(400).json({ error: 'Password is required' });
