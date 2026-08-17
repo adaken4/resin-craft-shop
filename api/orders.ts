@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { query } from './db';
-import { verifyAdminAuth } from './auth';
+import { query } from './db.js';
+import { verifyAdminAuth } from './auth.js';
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Origin', '*');
