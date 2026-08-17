@@ -104,8 +104,91 @@ const memoryStore = {
   } as Record<string, string>,
 };
 
+let schemaInitialized = false;
+
 /**
- * Execute SQL queries with automatic fallback to memory store for smooth local offline dev
+ * Ensures tables and seed data exist in the cloud database
+ */
+async function ensureSchema(): Promise<void> {
+  if (schemaInitialized || !sql) return;
+  try {
+    // 1. Products Table
+    await (sql as any)(`
+      CREATE TABLE IF NOT EXISTS products (
+        id VARCHAR(100) PRIMARY KEY,
+        name VARCHAR(255) NOT NULL,
+        price_kes NUMERIC NOT NULL,
+        photo_url TEXT NOT NULL,
+        description TEXT,
+        tag VARCHAR(100),
+        category VARCHAR(100) DEFAULT 'keyholder',
+        is_active BOOLEAN DEFAULT TRUE,
+        sort_order INT DEFAULT 0,
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      );
+    `);
+
+    // 2. Orders Table
+    await (sql as any)(`
+      CREATE TABLE IF NOT EXISTS orders (
+        id VARCHAR(100) PRIMARY KEY,
+        product_id VARCHAR(100),
+        product_name VARCHAR(255) NOT NULL,
+        price_kes NUMERIC NOT NULL,
+        quantity INT DEFAULT 1,
+        custom_image_url TEXT,
+        department VARCHAR(255) NOT NULL,
+        bus_route VARCHAR(255) NOT NULL,
+        pickup_spot VARCHAR(255) NOT NULL,
+        buyer_name VARCHAR(255) NOT NULL,
+        note TEXT,
+        status VARCHAR(50) DEFAULT 'pending',
+        created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      );
+    `);
+
+    // 3. Site Settings Table
+    await (sql as any)(`
+      CREATE TABLE IF NOT EXISTS site_settings (
+        key VARCHAR(100) PRIMARY KEY,
+        value TEXT NOT NULL,
+        updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+      );
+    `);
+
+    // Seed initial products if table is empty
+    const existing = (await (sql as any)('SELECT COUNT(id) as count FROM products')) as any[];
+    if (Number(existing[0]?.count) === 0) {
+      for (const p of memoryStore.products) {
+        await (sql as any)(
+          `INSERT INTO products (id, name, price_kes, photo_url, description, tag, category, is_active, sort_order)
+           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+           ON CONFLICT (id) DO NOTHING`,
+          [p.id, p.name, p.price_kes, p.photo_url, p.description, p.tag, p.category, p.is_active, p.sort_order]
+        );
+      }
+    }
+
+    // Seed default settings if empty
+    const existingSettings = (await (sql as any)('SELECT COUNT(key) as count FROM site_settings')) as any[];
+    if (Number(existingSettings[0]?.count) === 0) {
+      for (const [key, value] of Object.entries(memoryStore.settings)) {
+        await (sql as any)(
+          `INSERT INTO site_settings (key, value) VALUES ($1, $2) ON CONFLICT (key) DO NOTHING`,
+          [key, value]
+        );
+      }
+    }
+
+    schemaInitialized = true;
+  } catch (err: any) {
+    console.warn('Database schema auto-init note:', err.message);
+  }
+}
+
+/**
+ * Execute SQL queries with automatic fallback to memory store for resilience
  */
 export async function query<T = any>(text: string, params: any[] = []): Promise<T[]> {
   if (!sql) {
@@ -113,13 +196,14 @@ export async function query<T = any>(text: string, params: any[] = []): Promise<
   }
 
   try {
+    await ensureSchema();
     const result = await Promise.race([
-      (sql as any).query(text, params),
-      new Promise((_, reject) => setTimeout(() => reject(new Error('Neon query timeout')), 2500)),
+      params && params.length > 0 ? (sql as any)(text, params) : (sql as any)(text),
+      new Promise((_, reject) => setTimeout(() => reject(new Error('Neon query timeout')), 4500)),
     ]);
     return result as T[];
   } catch (error) {
-    console.warn('Neon connection unavailable/timed out, using memory fallback:', (error as Error).message);
+    console.warn('Neon connection query error, using memory fallback:', (error as Error).message);
     return handleMemoryFallback<T>(text, params);
   }
 }
