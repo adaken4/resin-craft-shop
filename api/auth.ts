@@ -4,14 +4,12 @@ import * as dotenv from 'dotenv';
 
 dotenv.config();
 
-const rawJwtSecret = process.env.JWT_SECRET;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
-
 function getJwtSecretKey(): Uint8Array {
-  if (!rawJwtSecret) {
+  const secret = process.env.JWT_SECRET;
+  if (!secret) {
     throw new Error('JWT_SECRET environment variable is missing or empty.');
   }
-  return new TextEncoder().encode(rawJwtSecret);
+  return new TextEncoder().encode(secret);
 }
 
 /**
@@ -58,8 +56,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).end();
   }
 
+  const adminPassword = process.env.ADMIN_PASSWORD;
+  const jwtSecret = process.env.JWT_SECRET;
+
   // Strict check: if environment variables are not set, refuse service
-  if (!ADMIN_PASSWORD || !rawJwtSecret) {
+  if (!adminPassword || !jwtSecret) {
     return res.status(500).json({ 
       error: 'Authentication service is misconfigured: ADMIN_PASSWORD or JWT_SECRET is missing from environment variables.' 
     });
@@ -71,7 +72,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Password is required' });
     }
 
-    if (password.trim() !== ADMIN_PASSWORD.trim()) {
+    if (password.trim() !== adminPassword.trim()) {
       return res.status(401).json({ error: 'Invalid admin passcode' });
     }
 
