@@ -100,10 +100,7 @@ export default defineConfig({
     outDir: 'dist',
     emptyOutDir: true,
     rollupOptions: {
-      input: {
-        main: resolve(__dirname, 'index.html'),
-        admin: resolve(__dirname, 'admin.html'),
-      },
+      input: resolve(__dirname, 'index.html'),
     },
   },
   server: {
