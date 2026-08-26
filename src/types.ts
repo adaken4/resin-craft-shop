@@ -20,6 +20,7 @@ export interface DropdownOption {
 export interface SiteSettings {
   shop_name: string;
   tagline: string;
+  hero_title: string;
   whatsapp_number: string;
   hero_badge: string;
   custom_price_kes: string;

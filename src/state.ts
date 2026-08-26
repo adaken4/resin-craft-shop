@@ -1,5 +1,5 @@
 import { Product, SiteSettings, OrderRecord, AnalyticsData, OrderFormState } from './types';
-import { PRODUCTS as FALLBACK_PRODUCTS, DEPARTMENTS, BUS_ROUTES, PICKUP_SPOTS } from './products';
+import { DEPARTMENTS, BUS_ROUTES, PICKUP_SPOTS } from './products';
 
 export interface AppState {
   products: Product[];
@@ -16,10 +16,11 @@ type StateListener = (state: AppState) => void;
 
 class StateStore {
   private state: AppState = {
-    products: [...FALLBACK_PRODUCTS],
+    products: [],
     settings: {
       shop_name: 'ResinCraft',
       tagline: 'Your emblem, sealed in pristine, hand-poured resin.',
+      hero_title: 'Preserve Your Passion in Hand-Poured Resin',
       whatsapp_number: '254704513552',
       hero_badge: 'Nairobi Office & Route Express Delivery',
       custom_price_kes: '500',

@@ -263,31 +263,38 @@ export function renderAdminHTML(): string {
 
         <div class="max-w-3xl mx-auto bg-obsidian-800/80 border border-obsidian-500 rounded-3xl p-6 sm:p-10 shadow-resin space-y-6">
           <form id="admin-branding-form" class="space-y-6">
-            <div class="space-y-1.5">
-              <label class="block text-xs font-label font-bold uppercase tracking-wider text-amber-400">Shop / Brand Name</label>
-              <input type="text" id="admin-setting-shop-name" value="${settings.shop_name}" required class="w-full bg-obsidian-900 border border-obsidian-500 rounded-xl px-4 py-3 text-white text-sm focus:border-amber-400 focus:outline-none transition-colors" />
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="space-y-1.5">
+                <label class="block text-xs font-label font-bold uppercase tracking-wider text-amber-400">Shop / Brand Name</label>
+                <input type="text" id="admin-setting-shop-name" value="${settings.shop_name}" required class="w-full bg-obsidian-900 border border-obsidian-500 rounded-xl px-4 py-3 text-white text-sm focus:border-amber-400 focus:outline-none transition-colors" />
+              </div>
+
+              <div class="space-y-1.5">
+                <label class="block text-xs font-label font-bold uppercase tracking-wider text-amber-400">Hero Section Badge</label>
+                <input type="text" id="admin-setting-hero-badge" value="${settings.hero_badge}" required class="w-full bg-obsidian-900 border border-obsidian-500 rounded-xl px-4 py-3 text-white text-sm focus:border-amber-400 focus:outline-none transition-colors" />
+              </div>
             </div>
 
             <div class="space-y-1.5">
-              <label class="block text-xs font-label font-bold uppercase tracking-wider text-amber-400">Store Hero Tagline</label>
-              <input type="text" id="admin-setting-tagline" value="${settings.tagline}" required class="w-full bg-obsidian-900 border border-obsidian-500 rounded-xl px-4 py-3 text-white text-sm focus:border-amber-400 focus:outline-none transition-colors" />
+              <label class="block text-xs font-label font-bold uppercase tracking-wider text-amber-400">Hero Headline Title</label>
+              <input type="text" id="admin-setting-hero-title" value="${settings.hero_title || 'Preserve Your Passion in Hand-Poured Resin'}" required class="w-full bg-obsidian-900 border border-obsidian-500 rounded-xl px-4 py-3 text-white text-sm focus:border-amber-400 focus:outline-none transition-colors" />
+            </div>
+
+            <div class="space-y-1.5">
+              <label class="block text-xs font-label font-bold uppercase tracking-wider text-amber-400">Hero Subtitle / Tagline</label>
+              <textarea id="admin-setting-tagline" rows="2" required class="w-full bg-obsidian-900 border border-obsidian-500 rounded-xl px-4 py-3 text-white text-sm focus:border-amber-400 focus:outline-none transition-colors">${settings.tagline}</textarea>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div class="space-y-1.5">
                 <label class="block text-xs font-label font-bold uppercase tracking-wider text-amber-400">WhatsApp Order Recipient Phone</label>
-                <input type="text" id="admin-setting-whatsapp" value="${settings.whatsapp_number}" required class="w-full bg-obsidian-900 border border-obsidian-500 rounded-xl px-4 py-3 text-white text-sm focus:border-amber-400 focus:outline-none transition-colors" />
+                <input type="text" id="admin-setting-whatsapp" value="${settings.whatsapp_number}" required placeholder="e.g. 254704513552" class="w-full bg-obsidian-900 border border-obsidian-500 rounded-xl px-4 py-3 text-white text-sm focus:border-amber-400 focus:outline-none transition-colors" />
               </div>
 
               <div class="space-y-1.5">
                 <label class="block text-xs font-label font-bold uppercase tracking-wider text-amber-400">Custom Keyholder Price (KES)</label>
                 <input type="number" id="admin-setting-custom-price" value="${settings.custom_price_kes}" required min="100" class="w-full bg-obsidian-900 border border-obsidian-500 rounded-xl px-4 py-3 text-white text-sm focus:border-amber-400 focus:outline-none transition-colors" />
               </div>
-            </div>
-
-            <div class="space-y-1.5">
-              <label class="block text-xs font-label font-bold uppercase tracking-wider text-amber-400">Hero Badge Text</label>
-              <input type="text" id="admin-setting-hero-badge" value="${settings.hero_badge}" required class="w-full bg-obsidian-900 border border-obsidian-500 rounded-xl px-4 py-3 text-white text-sm focus:border-amber-400 focus:outline-none transition-colors" />
             </div>
 
             <button type="submit" id="admin-save-settings-btn" class="w-full bg-gradient-to-r from-amber-400 to-amber-500 hover:from-amber-500 hover:to-amber-600 text-obsidian-900 font-headline font-bold text-sm sm:text-base py-3.5 px-8 rounded-2xl shadow-resin hover:shadow-resin-lg transition-all inline-flex items-center justify-center gap-3 whitespace-nowrap">
@@ -472,14 +479,16 @@ export function initAdminLogic(container: HTMLElement): void {
     brandingForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const shopName = (container.querySelector('#admin-setting-shop-name') as HTMLInputElement).value.trim();
-      const tagline = (container.querySelector('#admin-setting-tagline') as HTMLInputElement).value.trim();
-      const whatsapp = (container.querySelector('#admin-setting-whatsapp') as HTMLInputElement).value.trim();
       const heroBadge = (container.querySelector('#admin-setting-hero-badge') as HTMLInputElement).value.trim();
+      const heroTitle = (container.querySelector('#admin-setting-hero-title') as HTMLInputElement).value.trim();
+      const tagline = (container.querySelector('#admin-setting-tagline') as HTMLTextAreaElement).value.trim();
+      const whatsapp = (container.querySelector('#admin-setting-whatsapp') as HTMLInputElement).value.trim();
       const customPrice = (container.querySelector('#admin-setting-custom-price') as HTMLInputElement).value.trim();
 
       const newSettings = {
         shop_name: shopName,
         tagline: tagline,
+        hero_title: heroTitle,
         whatsapp_number: whatsapp,
         hero_badge: heroBadge,
         custom_price_kes: customPrice,

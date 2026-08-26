@@ -23,9 +23,6 @@ export function renderStorefrontHTML(): string {
       </div>
       
       <div class="flex items-center gap-3">
-        <a href="#order-section" class="hidden sm:inline-flex items-center space-x-1 text-sm font-semibold text-text-secondary hover:text-amber-400 transition-colors">
-          <span>How to Order</span>
-        </a>
         <a href="/admin" data-link class="inline-flex items-center gap-2 bg-obsidian-800 hover:bg-obsidian-700 text-text-secondary hover:text-amber-400 border border-obsidian-600 px-3.5 py-2 rounded-xl text-xs font-headline font-bold transition-all shadow-sm">
           <span class="material-symbols-outlined text-base leading-none flex-shrink-0">admin_panel_settings</span>
           <span class="hidden sm:inline">Artisan Portal</span>
@@ -41,8 +38,8 @@ export function renderStorefrontHTML(): string {
         <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
         <span>${settings.hero_badge}</span>
       </div>
-      <h1 class="text-3xl sm:text-5xl font-extrabold font-headline tracking-tight text-text-primary leading-tight">
-        Preserve Your Passion in <span class="bg-gradient-to-r from-amber-400 via-amber-300 to-amber-500 bg-clip-text text-transparent">Hand-Poured Resin</span>
+      <h1 id="hero-title-text" class="text-3xl sm:text-5xl font-extrabold font-headline tracking-tight text-text-primary leading-tight">
+        ${settings.hero_title || 'Preserve Your Passion in Hand-Poured Resin'}
       </h1>
       <p id="hero-tagline-text" class="text-base sm:text-lg text-text-secondary leading-relaxed">
         ${settings.tagline}
