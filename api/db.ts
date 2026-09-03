@@ -9,95 +9,24 @@ export const sql = connectionString ? neon(connectionString) : null;
 
 // Resilient In-Memory store for local offline dev / fallback
 const memoryStore = {
-  products: [
-    {
-      id: 'classic-car',
-      name: 'Classic Car',
-      price_kes: 450,
-      photo_url: '/img/classic-car.jpg',
-      description: 'Vintage automobile emblem encased in high-gloss dome resin with gold rim trim.',
-      tag: 'Bestseller',
-      category: 'keyholder',
-      is_active: true,
-      sort_order: 1,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      id: 'geometric-gold',
-      name: 'Geometric Gold',
-      price_kes: 500,
-      photo_url: '/img/geometric-gold.jpg',
-      description: 'Intricate mandala geometric gold foil pattern embedded in crystal-clear resin.',
-      tag: 'Popular',
-      category: 'keyholder',
-      is_active: true,
-      sort_order: 2,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      id: 'pressed-floral',
-      name: 'Pressed Floral',
-      price_kes: 450,
-      photo_url: '/img/pressed-floral.jpg',
-      description: 'Handcrafted miniature dried botanicals and gold leaf flakes preserved in glass dome.',
-      tag: 'Artisanal',
-      category: 'keyholder',
-      is_active: true,
-      sort_order: 3,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-    {
-      id: 'marble-initial',
-      name: 'Marble Initial',
-      price_kes: 550,
-      photo_url: '/img/marble-initial.jpg',
-      description: 'Custom gold monogram set on obsidian dark marble texture resin frame.',
-      tag: 'Customizable',
-      category: 'keyholder',
-      is_active: true,
-      sort_order: 4,
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString(),
-    },
-  ],
-  orders: [
-    {
-      id: 'ord-sample-01',
-      product_id: 'classic-car',
-      product_name: 'Classic Car',
-      price_kes: 450,
-      quantity: 2,
-      custom_image_url: null,
-      department: 'IT & Digital Services',
-      bus_route: 'Waiyaki Way / Westlands',
-      pickup_spot: 'Main Reception',
-      buyer_name: 'Sarah Mwangi',
-      note: 'Please pack in gold pouch if available',
-      status: 'in_progress',
-      created_at: new Date(Date.now() - 3600000 * 5).toISOString(),
-    },
-    {
-      id: 'ord-sample-02',
-      product_id: null,
-      product_name: 'Custom Resin Emblem',
-      price_kes: 500,
-      quantity: 1,
-      custom_image_url: '/img/geometric-gold.jpg',
-      department: 'Finance & Operations',
-      bus_route: 'Ngong Road / Karen',
-      pickup_spot: 'Cafeteria Terrace',
-      buyer_name: 'David Ochieng',
-      note: 'Need it for tomorrow morning',
-      status: 'pending',
-      created_at: new Date(Date.now() - 3600000 * 2).toISOString(),
-    },
-  ],
+  products: [] as Array<{
+    id: string;
+    name: string;
+    price_kes: number;
+    photo_url: string;
+    description: string;
+    tag?: string;
+    category?: string;
+    is_active: boolean;
+    sort_order: number;
+    created_at: string;
+    updated_at: string;
+  }>,
+  orders: [] as any[],
   settings: {
     shop_name: 'ResinCraft',
     tagline: 'Your emblem, sealed in pristine, hand-poured resin.',
+    hero_title: 'Preserve Your Passion in Hand-Poured Resin',
     whatsapp_number: '254704513552',
     hero_badge: 'Nairobi Office & Route Express Delivery',
     custom_price_kes: '500',
@@ -107,7 +36,7 @@ const memoryStore = {
 let schemaInitialized = false;
 
 /**
- * Ensures tables and seed data exist in the cloud database
+ * Ensures tables exist in the cloud database
  */
 async function ensureSchema(): Promise<void> {
   if (schemaInitialized || !sql) return;
@@ -156,19 +85,6 @@ async function ensureSchema(): Promise<void> {
         updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
       );
     `);
-
-    // Seed initial products if table is empty
-    const existing = (await (sql as any)('SELECT COUNT(id) as count FROM products')) as any[];
-    if (Number(existing[0]?.count) === 0) {
-      for (const p of memoryStore.products) {
-        await (sql as any)(
-          `INSERT INTO products (id, name, price_kes, photo_url, description, tag, category, is_active, sort_order)
-           VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
-           ON CONFLICT (id) DO NOTHING`,
-          [p.id, p.name, p.price_kes, p.photo_url, p.description, p.tag, p.category, p.is_active, p.sort_order]
-        );
-      }
-    }
 
     // Seed default settings if empty
     const existingSettings = (await (sql as any)('SELECT COUNT(key) as count FROM site_settings')) as any[];

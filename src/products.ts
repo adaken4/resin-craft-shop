@@ -1,39 +1,6 @@
 import { Product, DropdownOption } from './types';
 
-export const PRODUCTS: Product[] = [
-  {
-    id: "classic-car",
-    name: "Classic Car",
-    priceKES: 450,
-    photo: "/img/classic-car.jpg",
-    description: "Vintage automobile emblem encased in high-gloss dome resin with gold rim trim.",
-    tag: "Bestseller"
-  },
-  {
-    id: "geometric-gold",
-    name: "Geometric Gold",
-    priceKES: 500,
-    photo: "/img/geometric-gold.jpg",
-    description: "Intricate mandala geometric gold foil pattern embedded in crystal-clear resin.",
-    tag: "Popular"
-  },
-  {
-    id: "pressed-floral",
-    name: "Pressed Floral",
-    priceKES: 450,
-    photo: "/img/pressed-floral.jpg",
-    description: "Handcrafted miniature dried botanicals and gold leaf flakes preserved in glass dome.",
-    tag: "Artisanal"
-  },
-  {
-    id: "marble-initial",
-    name: "Marble Initial",
-    priceKES: 550,
-    photo: "/img/marble-initial.jpg",
-    description: "Custom gold monogram set on obsidian dark marble texture resin frame.",
-    tag: "Customizable"
-  }
-];
+export const PRODUCTS: Product[] = [];
 
 export const DEPARTMENTS: DropdownOption[] = [
   { value: "Finance & Operations", label: "Finance & Operations" },

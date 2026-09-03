@@ -20,6 +20,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       const settingsMap: Record<string, string> = {
         shop_name: 'ResinCraft',
         tagline: 'Your emblem, sealed in pristine, hand-poured resin.',
+        hero_title: 'Preserve Your Passion in Hand-Poured Resin',
         whatsapp_number: '254704513552',
         hero_badge: 'Nairobi Office & Route Express Delivery',
         custom_price_kes: '500',
@@ -44,7 +45,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
 
       const settings = req.body || {};
-      const allowedKeys = ['shop_name', 'tagline', 'whatsapp_number', 'hero_badge', 'custom_price_kes'];
+      const allowedKeys = ['shop_name', 'tagline', 'hero_title', 'whatsapp_number', 'hero_badge', 'custom_price_kes'];
 
       for (const [key, value] of Object.entries(settings)) {
         if (allowedKeys.includes(key) && value !== undefined && value !== null) {
